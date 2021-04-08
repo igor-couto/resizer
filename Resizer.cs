@@ -10,24 +10,27 @@ namespace resizer
     public class Resizer
     {
         private Arguments _arguments;
+        private string _currentPath;
 
         public Resizer(Arguments arguments) => _arguments = arguments;
 
         public void Run()
         {
-            var currentPath = Directory.GetCurrentDirectory();
+            _currentPath = Directory.GetCurrentDirectory();
 
             if(_arguments.ConvertAllFilesInFolder)
             {
-                ProcessDirectory(currentPath, _arguments.IsRecursiveSearch);
+                ProcessDirectory(_currentPath, _arguments.IsRecursiveSearch);
                 return;
             }
 
             if(IsImage(_arguments.FileName))
             {
-                var image = Image.FromFile(Path.GetFullPath(currentPath + "\\" + _arguments.FileName));
+                var image = Image.FromFile(Path.GetFullPath(_currentPath + "\\" + _arguments.FileName));
                 var newImage = ResizeImage(image, _arguments.Width, _arguments.Height);
-                newImage.Save(currentPath + "\\novo.png");
+                image.Dispose();
+                newImage.Save(_currentPath +  "\\" + _arguments.FileName);
+                newImage.Dispose();
             }
             else
                 Console.WriteLine("The file is not an image");
@@ -40,8 +43,11 @@ namespace resizer
             {
                 if(IsImage(fileName))
                 {
-                    var image = Image.FromFile(path + fileName);
-                    ResizeImage(image, _arguments.Width, _arguments.Height);
+                    var image = Image.FromFile(fileName);
+                    var newImage = ResizeImage(image, _arguments.Width, _arguments.Height);
+                    image.Dispose();
+                    newImage.Save(fileName);
+                    newImage.Dispose();
                 }
             }
 
