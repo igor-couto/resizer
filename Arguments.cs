@@ -11,7 +11,7 @@ namespace resizer
         public int Width {get;}
         public int Height {get;}
 
-        public CompositingMode CompositingMode {get;}
+        public CompositingMode CompositingMode {get;} = CompositingMode.SourceOver;
         public CompositingQuality CompositingQuality {get;} = CompositingQuality.HighQuality;
         public InterpolationMode InterpolationMode {get;} = InterpolationMode.HighQualityBicubic;
         public SmoothingMode SmoothingMode {get;} = SmoothingMode.HighQuality;
