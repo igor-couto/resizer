@@ -1,22 +1,14 @@
 using System;
 using System.Drawing.Drawing2D;
-using CommandLine;
 
 namespace resizer
 {
     public class Arguments
     {
-        [Option(Required = true, HelpText = "")]
         public string FileName {get;}
         public bool ConvertAllFilesInFolder {get;}
-        
-        [Option('r', "recursive", Required = false, Default = false )]
         public bool IsRecursiveSearch {get;}
-        
-        [Option('w', "width", Required = true )]
         public int Width {get;}
-
-        [Option('h', "height", Required = true )]
         public int Height {get;}
 
         public CompositingMode CompositingMode {get;}
