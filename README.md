@@ -1,4 +1,4 @@
-# Resizer
+# Resizer Cli
 
 C# .NET Core command-line Interface (CLI) application that resizes a image or a folder containing images.
 
