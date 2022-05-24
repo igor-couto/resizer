@@ -1,160 +1,159 @@
 using System;
 using System.Drawing.Drawing2D;
 
-namespace resizer
+namespace resizer;
+
+public class Arguments
 {
-    public class Arguments
+    public string FileName { get; }
+    public bool ConvertAllFilesInsideFolder { get; }
+    public bool IsRecursiveSearch { get; }
+    public int Width { get; }
+    public int Height { get; }
+
+    public CompositingMode CompositingMode { get; } = CompositingMode.SourceOver;
+    public CompositingQuality CompositingQuality { get; } = CompositingQuality.HighQuality;
+    public InterpolationMode InterpolationMode { get; } = InterpolationMode.HighQualityBicubic;
+    public SmoothingMode SmoothingMode { get; } = SmoothingMode.HighQuality;
+    public PixelOffsetMode PixelOffsetMode { get; } = PixelOffsetMode.HighQuality;
+
+    public Arguments(string[] args)
     {
-        public string FileName {get;}
-        public bool ConvertAllFilesInFolder {get;}
-        public bool IsRecursiveSearch {get;}
-        public int Width {get;}
-        public int Height {get;}
+        if (args[0] == ".")
+            ConvertAllFilesInsideFolder = true;
+        else
+            FileName = args[0];
 
-        public CompositingMode CompositingMode {get;} = CompositingMode.SourceOver;
-        public CompositingQuality CompositingQuality {get;} = CompositingQuality.HighQuality;
-        public InterpolationMode InterpolationMode {get;} = InterpolationMode.HighQualityBicubic;
-        public SmoothingMode SmoothingMode {get;} = SmoothingMode.HighQuality;
-        public PixelOffsetMode PixelOffsetMode {get;} = PixelOffsetMode.HighQuality;
-
-        public Arguments(string[] args)
+        if (int.TryParse(args[1], out var width))
         {
-            if(args[0] == ".")
-                ConvertAllFilesInFolder = true;
-            else
-                FileName = args[0];
-
-            if(int.TryParse(args[1], out var width))
+            if (width <= 0)
             {
-                if(width <= 0)
-                {
-                    Console.WriteLine("New size cannot be less than 0");
-                    return;
-                }
-                Width = width;
+                Console.WriteLine("New size cannot be less than 0");
+                return;
+            }
+            Width = width;
+        }
+
+        if (int.TryParse(args[2], out var height))
+        {
+            if (height <= 0)
+            {
+                Console.WriteLine("New size cannot be less than 0");
+                return;
+            }
+            Height = height;
+        }
+
+        for (var i = 3; i < args.Length; i++)
+        {
+            if (args[i] == "-r" || args[i] == "--recursive")
+                IsRecursiveSearch = true;
+
+            if (args[i] == "--compositing" || args[i] == "-c")
+            {
+                if (args[i + 1] == "source-over")
+                    CompositingMode = CompositingMode.SourceOver;
+                else
+                if (args[i + 1] == "source-copy")
+                    CompositingMode = CompositingMode.SourceCopy;
+                else
+                    Console.WriteLine("Fail to identify the Compositing Mode");
             }
 
-            if(int.TryParse(args[2], out var height))
+            if (args[i] == "--compositing-quality" || args[i] == "-cq")
             {
-                if(height <= 0)
+                switch (args[i + 1])
                 {
-                    Console.WriteLine("New size cannot be less than 0");
-                    return;
+                    case "default":
+                        CompositingQuality = CompositingQuality.Default;
+                        break;
+                    case "high-speed":
+                        CompositingQuality = CompositingQuality.Default;
+                        break;
+                    case "high-quality":
+                        CompositingQuality = CompositingQuality.Default;
+                        break;
+                    case "gamma-corrected":
+                        CompositingQuality = CompositingQuality.Default;
+                        break;
+                    case "assume-linear":
+                        CompositingQuality = CompositingQuality.Default;
+                        break;
                 }
-                Height = height;
             }
 
-            for(var i = 3; i < args.Length; i++)
+            if (args[i] == "--interpolation" || args[i] == "-i")
             {
-                if(args[i] == "-r" || args[i] == "--recursive")
-                    IsRecursiveSearch = true;
-
-                if(args[i] == "--compositing" || args[i] == "-c")
+                switch (args[i + 1])
                 {
-                    if(args[i+1] == "source-over")
-                        CompositingMode = CompositingMode.SourceOver;
-                    else
-                    if(args[i+1] == "source-copy")
-                        CompositingMode = CompositingMode.SourceCopy;
-                    else
-                        Console.WriteLine("Fail to identify the Compositing Mode");
+                    case "default":
+                        InterpolationMode = InterpolationMode.Default;
+                        break;
+                    case "low":
+                        InterpolationMode = InterpolationMode.Low;
+                        break;
+                    case "high":
+                        InterpolationMode = InterpolationMode.High;
+                        break;
+                    case "bilinear":
+                        InterpolationMode = InterpolationMode.Bilinear;
+                        break;
+                    case "bicubic":
+                        InterpolationMode = InterpolationMode.Bicubic;
+                        break;
+                    case "nearest-neighbor":
+                        InterpolationMode = InterpolationMode.NearestNeighbor;
+                        break;
+                    case "high-quality-bilinear":
+                        InterpolationMode = InterpolationMode.HighQualityBilinear;
+                        break;
+                    case "high-quality-bicubic":
+                        InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        break;
                 }
+            }
 
-                if(args[i] == "--compositing-quality" || args[i] == "-cq")
+            if (args[i] == "--smoothing" || args[i] == "-s")
+            {
+                switch (args[i + 1])
                 {
-                    switch(args[i + 1])
-                    {
-                        case "default": 
-                            CompositingQuality = CompositingQuality.Default;
-                            break;
-                        case "high-speed": 
-                            CompositingQuality = CompositingQuality.Default;
+                    case "default":
+                        SmoothingMode = SmoothingMode.Default;
                         break;
-                        case "high-quality": 
-                            CompositingQuality = CompositingQuality.Default;
+                    case "high-speed":
+                        SmoothingMode = SmoothingMode.HighSpeed;
                         break;
-                        case "gamma-corrected": 
-                            CompositingQuality = CompositingQuality.Default;
+                    case "high-quality":
+                        SmoothingMode = SmoothingMode.HighQuality;
                         break;
-                        case "assume-linear": 
-                            CompositingQuality = CompositingQuality.Default;
+                    case "none":
+                        SmoothingMode = SmoothingMode.None;
                         break;
-                    }
+                    case "anti-alias":
+                        SmoothingMode = SmoothingMode.AntiAlias;
+                        break;
                 }
+            }
 
-                if(args[i] == "--interpolation" || args[i] == "-i")
+            if (args[i] == "--pixel-offset" || args[i] == "-po")
+            {
+                switch (args[i + 1])
                 {
-                    switch(args[i + 1])
-                    {
-                        case "default": 
-                            InterpolationMode = InterpolationMode.Default;
-                            break;
-                        case "low": 
-                            InterpolationMode = InterpolationMode.Low;
+                    case "default":
+                        PixelOffsetMode = PixelOffsetMode.Default;
                         break;
-                        case "high": 
-                            InterpolationMode = InterpolationMode.High;
+                    case "high-speed":
+                        PixelOffsetMode = PixelOffsetMode.HighSpeed;
                         break;
-                        case "bilinear": 
-                            InterpolationMode = InterpolationMode.Bilinear;
+                    case "high-quality":
+                        PixelOffsetMode = PixelOffsetMode.HighQuality;
                         break;
-                        case "bicubic": 
-                            InterpolationMode = InterpolationMode.Bicubic;
+                    case "none":
+                        PixelOffsetMode = PixelOffsetMode.None;
                         break;
-                        case "nearest-neighbor": 
-                            InterpolationMode = InterpolationMode.NearestNeighbor;
+                    case "half":
+                        PixelOffsetMode = PixelOffsetMode.Half;
                         break;
-                        case "high-quality-bilinear": 
-                            InterpolationMode = InterpolationMode.HighQualityBilinear;
-                        break;
-                        case "high-quality-bicubic": 
-                            InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        break;
-                    }
-                }
-
-                if(args[i] == "--smoothing" || args[i] == "-s")
-                {
-                    switch(args[i + 1])
-                    {
-                        case "default": 
-                            SmoothingMode = SmoothingMode.Default;
-                            break;
-                        case "high-speed": 
-                            SmoothingMode = SmoothingMode.HighSpeed;
-                        break;
-                        case "high-quality": 
-                            SmoothingMode = SmoothingMode.HighQuality;
-                        break;
-                        case "none": 
-                            SmoothingMode = SmoothingMode.None;
-                        break;
-                        case "anti-alias": 
-                            SmoothingMode = SmoothingMode.AntiAlias;
-                        break;
-                    }
-                }
-                    
-                if(args[i] == "--pixel-offset" || args[i] == "-po")
-                {
-                    switch(args[i + 1])
-                    {
-                        case "default": 
-                            PixelOffsetMode = PixelOffsetMode.Default;
-                            break;
-                        case "high-speed": 
-                            PixelOffsetMode = PixelOffsetMode.HighSpeed;
-                        break;
-                        case "high-quality": 
-                            PixelOffsetMode = PixelOffsetMode.HighQuality;
-                        break;
-                        case "none": 
-                            PixelOffsetMode = PixelOffsetMode.None;
-                        break;
-                        case "half": 
-                            PixelOffsetMode = PixelOffsetMode.Half;
-                        break;
-                    }
                 }
             }
         }
